@@ -3,42 +3,42 @@ const router = express.Router();
 const Blog = require("../modules/BlogSchema");
 const authorization = require('../middleware/checkAuth')
 
-const multer = require("multer");
+// const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/Blogs/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, Date.now() + file.originalname);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "./public/Blogs/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, Date.now() + file.originalname);
+//   },
+// });
 
-const fileFilter = (req, file, cb) => {
-  if ( file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/svg') {
-    cb(null, true);
-  }else{
-    cb(null, false);
-  }
-};
+// const fileFilter = (req, file, cb) => {
+//   if ( file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/svg') {
+//     cb(null, true);
+//   }else{
+//     cb(null, false);
+//   }
+// };
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5,
-  },
-  fileFilter:fileFilter
-});
+// const upload = multer({
+//   storage: storage,
+//   limits: {
+//     fileSize: 1024 * 1024 * 5,
+//   },
+//   fileFilter:fileFilter
+// });
 
 
-router.post("/",upload.single("blogimg"), authorization,(req, res) => {
+router.post("/", authorization,(req, res) => {
   // console.log("image file ->", req.file);
   try {
     const blog = new Blog({
       title: req.body.title,
       category: req.body.category,
-      image: req.file.path,
+      image: req.body.image,
       description: req.body.description,
       desc_list: req.body.desc_list
     });
@@ -67,6 +67,22 @@ router.get("/", (req, res) => {
   }
 });
 
+router.get("/:id",authorization, (req, res) => {
+  try {
+    Blog.findById({_id: req.params.id})
+      .then((result) => {
+      res.status(200).json({
+        message: "Fetch Data",
+        Blog_List: result,
+      });
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "GET Blog is not working...",
+    });
+  }
+});
+
 
 
 router.delete("/:id",authorization, (req, res) => {
@@ -83,7 +99,7 @@ router.delete("/:id",authorization, (req, res) => {
   }
 });
 
-router.put("/:id",upload.single("blogimg"),authorization,(req, res) => {
+router.put("/:id",authorization,(req, res) => {
   try {
     Blog.findByIdAndUpdate(
       { _id: req.params.id },
@@ -91,7 +107,7 @@ router.put("/:id",upload.single("blogimg"),authorization,(req, res) => {
         $set: {
           title: req.body.title,
           category: req.body.category,
-          image: req.file.path,
+          image: req.body.image,
           description: req.body.description,
           desc_list: req.body.desc_list
         },

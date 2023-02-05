@@ -4,40 +4,40 @@ const Testimonial = require("../modules/TestimonialSchema");
 
 const authorization = require('../middleware/checkAuth')
 
-const multer = require("multer");
+// const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/Testimonials/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, Date.now() + file.originalname);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "./public/Testimonials/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, Date.now() + file.originalname);
+//   },
+// });
 
-const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype === "image/jpeg" ||
-    file.mimetype === "image/jpg" ||
-    file.mimetype === "image/png" ||
-    file.mimetype === "image/svg"
-  ) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
+// const fileFilter = (req, file, cb) => {
+//   if (
+//     file.mimetype === "image/jpeg" ||
+//     file.mimetype === "image/jpg" ||
+//     file.mimetype === "image/png" ||
+//     file.mimetype === "image/svg"
+//   ) {
+//     cb(null, true);
+//   } else {
+//     cb(null, false);
+//   }
+// };
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5,
-  },
-  fileFilter: fileFilter,
-});
+// const upload = multer({
+//   storage: storage,
+//   limits: {
+//     fileSize: 1024 * 1024 * 5,
+//   },
+//   fileFilter: fileFilter,
+// });
 
-router.post("/",upload.single("testimonialimg"),authorization, (req, res) => {
+router.post("/", (req, res) => {
   console.log("image file ->", req.file);
   const Testimoni = new Testimonial({
     name: req.body.name,
@@ -45,7 +45,7 @@ router.post("/",upload.single("testimonialimg"),authorization, (req, res) => {
     city: req.body.city,
     description: req.body.description,
     category: req.body.category,
-    image: req.file.path,
+    image: req.body.image,
   });
   Testimoni.save()
     .then((result) => {
@@ -105,7 +105,7 @@ router.delete("/:id", authorization,(req, res) => {
   }
 });
 
-router.put("/:id",upload.single("testimonialimg"), (req, res) => {
+router.put("/:id",authorization,(req, res) => {
   try {
     Testimonial.findByIdAndUpdate(
       { _id: req.params.id },
@@ -116,7 +116,7 @@ router.put("/:id",upload.single("testimonialimg"), (req, res) => {
           city: req.body.city,
           description: req.body.description,
           category: req.body.category,
-          image: req.file.path,
+          image: req.body.image,
         },
       }
     ).then((result) => {

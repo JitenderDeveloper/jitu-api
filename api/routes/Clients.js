@@ -4,40 +4,40 @@ const Client = require("../modules/ClientsSchema");
 
 const authorization = require('../middleware/checkAuth')
 
-const multer = require("multer");
+// const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/Clients/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, Date.now() + file.originalname);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "./public/Clients/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, Date.now() + file.originalname);
+//   },
+// });
 
-const fileFilter = (req, file, cb) => {
-  if ( file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/svg') {
-    cb(null, true);
-  }else{
-    cb(null, false);
-  }
-};
+// const fileFilter = (req, file, cb) => {
+//   if ( file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' || file.mimetype === 'image/svg') {
+//     cb(null, true);
+//   }else{
+//     cb(null, false);
+//   }
+// };
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5,
-  },
-  fileFilter:fileFilter
-});
+// const upload = multer({
+//   storage: storage,
+//   limits: {
+//     fileSize: 1024 * 1024 * 5,
+//   },
+//   fileFilter:fileFilter
+// });
 
-router.post("/", upload.single("clientimg"), authorization, (req, res) => {
+router.post("/", authorization, (req, res) => {
   // console.log("image file ->", req.file);
   try {
     const clientData = new Client({
       title: req.body.title,
-      logo: req.file.path,
+      logo: req.body.logo,
     });
     clientData.save().then((result) => {
       res.status(200).json({
@@ -82,7 +82,26 @@ router.delete("/:id", authorization, (req, res) => {
   }
 });
 
-router.put("/:id",upload.single("clientimg"),authorization, (req, res) => {
+router.get("/:id", authorization, (req, res) => {
+  try {
+    Client.findById({ _id: req.params.id })
+      .then((result) => {
+      res.status(200).json({
+        message: "One Client is find..",
+        Client_list: result,
+      });
+    });
+  } catch (error) {
+    res.status(400).json({
+      error: "Client route is not working...",
+    });
+  }
+});
+
+// upload.single("clientimg"), 
+// logo: req.file.path,
+
+router.put("/:id",authorization, (req, res) => {
   // console.log('put data ->', req.file);
   try {
     Client.findByIdAndUpdate(
@@ -90,7 +109,7 @@ router.put("/:id",upload.single("clientimg"),authorization, (req, res) => {
       {
         $set: {
           title: req.body.title,
-          logo: req.file.path,
+          logo: req.body.logo,
         },
       }
     ).then((result) => {
