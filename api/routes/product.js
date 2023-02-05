@@ -35,7 +35,7 @@ const authorization = require('../middleware/checkAuth')
 
 
 router.post("/",authorization, (req, res) => {
-  console.log("image file ->", req.file);
+  // console.log("image file ->", req.file);
   const Products = new Product({
     title: req.body.title,
     price: req.body.price,
